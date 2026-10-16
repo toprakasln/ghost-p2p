@@ -1,0 +1,30 @@
+{
+  "name": "ghost-p2p",
+  "version": "1.0.0",
+  "description": "Tamamen Anonim Player-to-Player (P2P) Şifreli Mesajlaşma Uygulaması",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "web": "node server.js",
+    "build:single": "node build-singlefile.js"
+  },
+  "keywords": [
+    "p2p",
+    "anonymous",
+    "encrypted",
+    "webrtc",
+    "e2ee",
+    "messaging",
+    "electron",
+    "desktop-app"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "peerjs": "^1.5.5",
+    "ws": "^8.22.0"
+  },
+  "devDependencies": {
+    "electron": "^44.8.0"
+  }
+}

@@ -1,0 +1,14 @@
+# Bağımlılıklar
+node_modules/
+package-lock.json
+
+# Dağıtım / Build çıktıları
+dist/
+build/
+
+# Sistem ve editör geçici dosyaları
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/

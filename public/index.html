@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>GhostP2P | Anonymous Player-to-Player Messaging</title>
+  <link rel="stylesheet" href="style.css">
+  <meta name="description" content="Registration-free, serverless, end-to-end encrypted (E2EE) WebRTC Player-to-Player anonymous messenger.">
+  <meta name="theme-color" content="#000000">
+</head>
+<body>
+  <!-- Anti-Prying Privacy Shield Overlay -->
+  <div id="privacyShield" class="privacy-shield hidden">
+    <div class="privacy-shield-content">
+      <div class="shield-icon">🛡️</div>
+      <h3>Privacy Shield Active</h3>
+      <p>Window lost focus. Content has been blurred to protect your conversation from prying eyes.</p>
+      <button id="unshieldBtn" class="btn btn-primary">Continue Viewing</button>
+    </div>
+  </div>
+
+  <!-- Main Application Container -->
+  <div class="app-container">
+    
+    <!-- Header & Status Bar -->
+    <header class="top-nav">
+      <div class="brand">
+        <div class="brand-logo">GP</div>
+        <div class="brand-text">
+          <h1>Ghost<span>P2P</span></h1>
+        </div>
+        <span class="sub-badge">E2EE</span>
+      </div>
+
+      <!-- Connection Status Indicator -->
+      <div class="status-center">
+        <div id="connectionPill" class="status-pill status-disconnected">
+          <span class="status-dot"></span>
+          <span id="connectionText">Offline</span>
+        </div>
+        <div id="pingBadge" class="info-badge hidden">
+          <span id="pingValue">-- ms</span> (P2P)
+        </div>
+      </div>
+
+      <!-- Fast Controls -->
+      <div class="nav-controls">
+        <button id="fingerprintBtn" class="icon-btn hidden" title="Safety Fingerprint">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 0 0-10 10c0 5.52 4.48 10 10 10s10-4.48 10-10c0-1.85-.5-3.58-1.38-5.06M12 6a6 6 0 0 0-6 6c0 3.31 2.69 6 6 6s6-2.69 6-6c0-.98-.24-1.9-.66-2.72M12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>
+        </button>
+        <button id="toggleAudioBtn" class="icon-btn" title="Audio Notifications">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+        </button>
+        <button id="toggleShieldBtn" class="icon-btn" title="Anti-Prying Blur Screen">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        </button>
+        <button id="panicBtn" class="btn btn-panic btn-sm" title="Wipe traces and panic exit">
+          <span>PANIC</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 1. LOBBY VIEW (DEFAULT ENGLISH & MINIMALIST B&W) -->
+    <main id="lobbyView" class="view active-view">
+      <div class="lobby-card">
+        
+        <!-- Anonymous Identity -->
+        <section class="identity-section">
+          <div class="section-tag">ANONYMOUS IDENTITY</div>
+          <div class="avatar-alias-row">
+            <div id="myAvatar" class="avatar-bubble"></div>
+            <div class="alias-input-wrapper">
+              <label for="aliasInput">Your Codename</label>
+              <div class="input-with-button">
+                <input type="text" id="aliasInput" maxlength="24" value="Ghost Operator" spellcheck="false" autocomplete="off">
+                <button id="randomizeAliasBtn" class="btn btn-outline" title="Regenerate">🎲</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Simple 2-Option Connection Box -->
+        <div class="simple-connect-box">
+          
+          <!-- Option 1: Create Room (Share Link) -->
+          <div class="connect-mode-card">
+            <h3>
+              <span>1. Create Room</span>
+              <span class="sub-badge">SERVERLESS</span>
+            </h3>
+            <p>Share your room code or copy direct link to invite your peer.</p>
+            
+            <div class="big-room-code-row">
+              <div id="generatedRoomCode" class="room-code-display">------</div>
+              <button id="copyRoomLinkBtn" class="btn btn-primary" title="Copy invitation link">
+                📋 Copy Link
+              </button>
+            </div>
+          </div>
+
+          <div class="or-divider">OR</div>
+
+          <!-- Option 2: Join Room -->
+          <div class="connect-mode-card">
+            <h3>2. Join Room</h3>
+            <p>Enter the 6-character room code provided by your peer.</p>
+            
+            <div class="join-code-row">
+              <input type="text" id="joinRoomInput" placeholder="e.g. 8X7F2A" maxlength="12" autocomplete="off" spellcheck="false">
+              <button id="joinRoomBtn" class="btn btn-primary">Connect</button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Optional Secret Password Box -->
+        <div class="security-passkey-box">
+          <div class="passkey-header">
+            <span class="icon">🔑</span>
+            <div>
+              <strong>Secret Passkey</strong> (Optional / Extra E2EE)
+              <p class="text-muted">When both peers enter the same secret, messages are doubly encrypted with Web Crypto AES-256.</p>
+            </div>
+          </div>
+          <input type="password" id="sharedSecretInput" placeholder="Shared secret password (Optional)" autocomplete="off">
+        </div>
+
+        <!-- Privacy Guarantees -->
+        <div class="privacy-guarantee">
+          <div class="guarantee-item">
+            <span class="g-icon">●</span>
+            <div><strong>Zero Server & Logs</strong> No IP or chat history stored.</div>
+          </div>
+          <div class="guarantee-item">
+            <span class="g-icon">●</span>
+            <div><strong>Direct P2P</strong> Data flows device-to-device.</div>
+          </div>
+          <div class="guarantee-item">
+            <span class="g-icon">●</span>
+            <div><strong>AES-256-GCM</strong> Hardware end-to-end encryption.</div>
+          </div>
+          <div class="guarantee-item">
+            <span class="g-icon">●</span>
+            <div><strong>Burn & Panic</strong> Instant memory destruction on exit.</div>
+          </div>
+        </div>
+
+        <!-- Legal Disclaimer Notice -->
+        <div class="legal-notice-bar">
+          <span>⚖️ This open-source tool is provided strictly for educational and security research. The developer operates no servers and cannot access data. Users assume sole responsibility.</span>
+          <button id="openLegalModalBtn" class="link-btn">Legal Disclaimer & Terms</button>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- 2. CHAT VIEW -->
+    <main id="chatView" class="view">
+      
+      <!-- Chat Header -->
+      <div class="chat-header">
+        <div class="peer-profile">
+          <div id="peerAvatar" class="avatar-bubble small"></div>
+          <div class="peer-details">
+            <div class="peer-name-row">
+              <span id="peerAliasName" class="peer-name">Connecting...</span>
+              <span id="peerStatusBadge" class="badge badge-warning">Matching</span>
+            </div>
+            <div class="peer-sub-info">
+              <span id="channelTypeLabel">WebRTC DataChannel</span>
+              <span class="dot-separator">•</span>
+              <span id="activeRoomLabel">Room: ------</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-header-actions">
+          <!-- Ephemeral Message Timer -->
+          <div class="ephemeral-dropdown">
+            <label for="ephemeralSelect">⏳ Burn:</label>
+            <select id="ephemeralSelect">
+              <option value="0">Off (Keep)</option>
+              <option value="5">5 Seconds</option>
+              <option value="15">15 Seconds</option>
+              <option value="30">30 Seconds</option>
+              <option value="60">1 Minute</option>
+            </select>
+          </div>
+
+          <button id="leaveChatBtn" class="btn btn-danger-outline btn-sm">Leave</button>
+        </div>
+      </div>
+
+      <!-- Message Stream -->
+      <div id="messageStream" class="message-stream">
+        <div class="system-message">
+          <div class="system-bubble">
+            <strong>Protected P2P Channel Opened</strong>
+            Messages are encrypted directly device-to-device. All memory traces are purged when closed.
+          </div>
+        </div>
+      </div>
+
+      <!-- Typing Indicator -->
+      <div id="typingIndicator" class="typing-indicator hidden">
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+        <span id="typingText">Peer is typing...</span>
+      </div>
+
+      <!-- File Transfer Progress -->
+      <div id="fileTransferProgress" class="file-progress-container hidden">
+        <div class="file-progress-info">
+          <span id="transferFileName">file.zip</span>
+          <span id="transferPercentage">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div id="transferProgressBar" class="progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Chat Bottom Input Bar -->
+      <div class="chat-input-bar">
+        
+        <!-- File Attachment -->
+        <input type="file" id="fileInput" class="hidden">
+        <button id="attachBtn" class="icon-btn" title="Send P2P File or Image">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+        </button>
+
+        <!-- Voice Recording Button -->
+        <button id="recordAudioBtn" class="icon-btn" title="Record P2P Voice Note">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+        </button>
+
+        <!-- Message Input -->
+        <div class="input-field-wrapper">
+          <textarea id="messageInput" placeholder="Type an encrypted message... (Enter to send)" rows="1" maxlength="5000"></textarea>
+        </div>
+
+        <!-- Send Button -->
+        <button id="sendMessageBtn" class="btn btn-send" title="Send">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+        </button>
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- MODAL: SAFETY FINGERPRINT VERIFICATION -->
+  <div id="fingerprintModal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Safety Verification Code</h3>
+        <button class="close-modal-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>To prevent Man-in-the-Middle (MITM) attacks, compare this safety number with your peer:</p>
+        <div id="safetyFingerprintDisplay" class="fingerprint-box">XXXX - XXXX - XXXX - XXXX</div>
+        <p class="text-muted">If this code matches on both screens, your end-to-end encryption is 100% verified.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary close-modal-btn w-full">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: LEGAL DISCLAIMER -->
+  <div id="legalModal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>⚖️ Legal Disclaimer & Liability Limitation</h3>
+        <button class="close-modal-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p><strong>1. Not a Service Provider:</strong> The developers do not host, operate, or maintain any server or database. This software is strictly client-side open-source code.</p>
+        <p class="mt-2"><strong>2. Zero Data & Zero Control:</strong> Communications flow directly peer-to-peer (WebRTC) with AES-256-GCM encryption. It is mathematically impossible for the developer to access or log data.</p>
+        <p class="mt-2"><strong>3. User Responsibility:</strong> This tool is provided for legitimate privacy and academic research. Users assume sole responsibility for compliance with all local laws.</p>
+        <p class="mt-2"><strong>4. AS IS:</strong> Software is provided "AS IS" without warranty of any kind. Developers shall not be liable for any claims or damages.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary close-modal-btn w-full">I Understand and Agree</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="peerjs.min.js"></script>
+  <script src="crypto.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
